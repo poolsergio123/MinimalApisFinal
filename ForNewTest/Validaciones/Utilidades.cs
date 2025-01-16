@@ -5,6 +5,10 @@
         public static string CampoRequeridoMensaje = "El campo {PropertyName} es requerido.";
         public static string MaxCaracteresMensaje = "El campo {PropertyName} solo acepta {MaxLength} caracteres.";
         public static string PrimeraLetraMensaje = "El campo {PropertyName} debe iniciar con letra mayuscula.";
+
+        public static string EmailMensaje = "El campo {PropertyName} debe ser un email valido.";
+
+
         public static string GreatherThanOrEqualToMensaje(DateTime dateTime)
         {
             return "El campo {PropertyName} solo acepta fechas mayores a " + dateTime.ToString("yyyy-MM-dd");

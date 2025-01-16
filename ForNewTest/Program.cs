@@ -7,6 +7,10 @@ using ForNewTest.Servicios;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using ForNewTest.Entidades;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using ForNewTest.Utilidades;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,8 +28,11 @@ builder.Services.AddCors(opciones =>
     });
 });
 builder.Services.AddDbContext<AplicationDBContext>(op => op.UseSqlServer("name=DefaultConnection"));
+builder.Services.AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<AplicationDBContext>().AddDefaultTokenProviders();
 
 
+builder.Services.AddScoped<UserManager<IdentityUser>>();
+builder.Services.AddScoped<SignInManager<IdentityUser>>();
 // Add services to the container.
 builder.Services.AddOutputCache();
 builder.Services.AddScoped<IGeneroRepositorio, GeneroRepositorio>();
@@ -44,7 +51,16 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddProblemDetails();
 
-builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthentication().AddJwtBearer(opt => opt.TokenValidationParameters = new TokenValidationParameters
+{
+    ValidateIssuer = false,
+    ValidateAudience = false,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    //IssuerSigningKey = Llaves.ObtenerLlave(builder.Configuration).First(),
+    IssuerSigningKeys = Llaves.ObtenerTodasLasLlaves(builder.Configuration),
+    ClockSkew = TimeSpan.Zero
+});
 builder.Services.AddAuthorization();
 
 
@@ -91,5 +107,8 @@ app.MapGroup("/generos").MapGenero();
 app.MapGroup("/actores").MapActor();
 app.MapGroup("/peliculas").MapPelicula();
 app.MapGroup("/pelicula/{peliculaid:int}/comentarios").MapComentario();
+app.MapGroup("/usuarios").MapUsuarios();
+
+
 
 app.Run();
