@@ -19,7 +19,7 @@ namespace ForNewTest.Contexto
             {
                 entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd();
-                entity.Property(p => p.Nombre)                
+                entity.Property(p => p.Nombre)
                 .HasMaxLength(100);
             });
             modelBuilder.Entity<ActorModel>().Property(e => e.Nombre).HasMaxLength(150);
