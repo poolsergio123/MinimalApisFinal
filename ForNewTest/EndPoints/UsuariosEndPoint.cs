@@ -1,4 +1,5 @@
-﻿using ForNewTest.DTO_s;
+﻿using FluentValidation;
+using ForNewTest.DTO_s;
 using ForNewTest.Filtros;
 using ForNewTest.Utilidades;
 using ForNewTest.Validaciones;
@@ -16,7 +17,29 @@ namespace ForNewTest.EndPoints
         public static RouteGroupBuilder MapUsuarios(this RouteGroupBuilder group)
         {
             group.MapPost("/registrar",Registrar).AddEndpointFilter<FiltroDeValidaciones<CredencialesUsuarioDTO>>();
+            group.MapPost("/login", Login).AddEndpointFilter<FiltroDeValidaciones<CredencialesUsuarioDTO>>();
             return group;
+        }
+
+        static async Task<Results<Ok<RespuestaAutenticacionDTO>, BadRequest<string>>> Login(CredencialesUsuarioDTO credencialesUsuarioDTO, [FromServices] SignInManager<IdentityUser> signInManager, [FromServices] UserManager<IdentityUser> userManager,IConfiguration configuration )
+        {
+            var usuario = await userManager.FindByEmailAsync(credencialesUsuarioDTO.Email);
+
+            if (usuario == null) {
+                return TypedResults.BadRequest("Login Incorrecto.");
+            }
+
+            var resultado = await signInManager.CheckPasswordSignInAsync(usuario, credencialesUsuarioDTO.Password, lockoutOnFailure: false);
+            if (resultado.Succeeded)
+            {
+                var respuestaAutenticacion = ConstruirToken(credencialesUsuarioDTO,configuration);
+                return TypedResults.Ok(respuestaAutenticacion);
+            }
+            else
+            {
+                return TypedResults.BadRequest("Login Incorrecto.");
+            }
+        
         }
 
         static async Task<Results<Ok<RespuestaAutenticacionDTO>,BadRequest<IEnumerable<IdentityError>>>> Registrar(CredencialesUsuarioDTO credencialesUsuarioDTO, [FromServices] UserManager<IdentityUser> userManager, IConfiguration configuration)

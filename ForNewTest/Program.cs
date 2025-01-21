@@ -49,7 +49,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(); ;
 
 builder.Services.AddAuthentication().AddJwtBearer(opt => opt.TokenValidationParameters = new TokenValidationParameters
 {
