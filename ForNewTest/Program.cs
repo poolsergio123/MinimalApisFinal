@@ -77,7 +77,8 @@ var app = builder.Build();
 //}
 app.UseExceptionHandler(exp => exp.Run(async context =>
 {
-    var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
+    //!
+    var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>()!;
     var exception = exceptionHandlerFeature.Error!;
 
     var error = new ErrorModel();

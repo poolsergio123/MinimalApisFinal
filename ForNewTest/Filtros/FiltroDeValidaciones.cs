@@ -6,7 +6,7 @@ namespace ForNewTest.Filtros
 {
     public class FiltroDeValidaciones<T> : IEndpointFilter
     {
-        public async ValueTask<object> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
         {
             var validador = context.HttpContext.RequestServices.GetService<IValidator<T>>();
             if (validador is null)
@@ -14,20 +14,20 @@ namespace ForNewTest.Filtros
                 return await next(context);
             }
 
-            var insumoAValidar = context.Arguments.OfType<T>().FirstOrDefault();
-
-            if (insumoAValidar is null)
+            var insumo = context.Arguments.OfType<T>().FirstOrDefault();
+            if (insumo is null)
             {
-                return TypedResults.Problem("No pudo ser validada la entidad a validar.");
+                return TypedResults.Problem("No se reconoce la Entidad.");
             }
 
-            var resultadoVal = await validador.ValidateAsync(insumoAValidar);
-
-            if (!resultadoVal.IsValid)
+            var validador2 = await validador.ValidateAsync(insumo);
+            if (!validador2.IsValid)
             {
-                return TypedResults.ValidationProblem(resultadoVal.ToDictionary());
+                return TypedResults.ValidationProblem(validador2.ToDictionary());
             }
+
             return await next(context);
         }
+
     }
 }
