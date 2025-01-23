@@ -49,7 +49,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-builder.Services.AddProblemDetails(); ;
+builder.Services.AddProblemDetails();
 
 builder.Services.AddAuthentication().AddJwtBearer(opt => opt.TokenValidationParameters = new TokenValidationParameters
 {
@@ -75,21 +75,22 @@ var app = builder.Build();
     app.UseSwagger();
     app.UseSwaggerUI();
 //}
-app.UseExceptionHandler(exp => exp.Run(async context =>
+app.UseExceptionHandler(exp =>exp.Run(async context =>
 {
-    //!
-    var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>()!;
-    var exception = exceptionHandlerFeature.Error!;
+    var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
+    var except = exceptionHandlerFeature?.Error;
 
     var error = new ErrorModel();
     error.Fecha = DateTime.UtcNow;
-    error.MensajeError = exception.Message;
-    error.StackTrace= exception.StackTrace;
+    error.MensajeError = except.Message;
+    error.StackTrace = except.StackTrace;
 
     var repositorio = context.RequestServices.GetRequiredService<IErrorRepositorio>();
     await repositorio.CrearError(error);
-    await TypedResults.BadRequest(new { tipo = "error", mensaje="Ha ocurrido un error inesperado", estatus = 500}).ExecuteAsync(context);
+    await TypedResults.BadRequest(new { Type = "Error", Message = "Ha ocurrido un error.", status=500 }).ExecuteAsync(context);
 }));
+
+
 app.UseStatusCodePages();
 
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using System.Xml.Serialization;
 
 namespace ForNewTest.Utilidades
 {
@@ -12,16 +13,19 @@ namespace ForNewTest.Utilidades
         public static IEnumerable<SecurityKey> ObtenerLlave(IConfiguration configuration) => ObtenerLlave(configuration,IssuerOwn);
         public static IEnumerable<SecurityKey> ObtenerLlave(IConfiguration configuration, string issuer)
         {
+
+
             var signingKey = configuration.GetSection(SeccionLlaves)
                                           .GetChildren()
-                                          .SingleOrDefault(key => key[SeccionLlaves_Emisor]==issuer);
+                                          .SingleOrDefault(x=> x[SeccionLlaves_Emisor] == issuer);
 
-            if (signingKey is not null&& signingKey[SeccionLlaves_Valor] is string valorLlave)
+
+
+            if (signingKey is not null && signingKey[SeccionLlaves_Valor] is string valorLlave)
             {
                 yield return new SymmetricSecurityKey(Convert.FromBase64String(valorLlave));
             }
         }
-
         public static IEnumerable<SecurityKey> ObtenerTodasLasLlaves(IConfiguration configuration)
         {
             var signingKeys = configuration.GetSection(SeccionLlaves)
