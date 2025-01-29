@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using ForNewTest.Utilidades;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +29,8 @@ builder.Services.AddCors(opciones =>
     });
 });
 builder.Services.AddDbContext<AplicationDBContext>(op => op.UseSqlServer("name=DefaultConnection"));
-builder.Services.AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<AplicationDBContext>().AddDefaultTokenProviders();
 
+builder.Services.AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<AplicationDBContext>().AddDefaultTokenProviders();
 
 builder.Services.AddScoped<UserManager<IdentityUser>>();
 builder.Services.AddScoped<SignInManager<IdentityUser>>();
@@ -42,6 +43,7 @@ builder.Services.AddScoped<IComentarioRepositorio, ComentarioRepositorio>();
 builder.Services.AddScoped<IErrorRepositorio, ErrorRepositorio>();
 //builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArchivosAzure>();
 builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArchivosLocal>();
+builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
 builder.Services.AddHttpContextAccessor();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -51,16 +53,20 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddProblemDetails();
 
-builder.Services.AddAuthentication().AddJwtBearer(opt => opt.TokenValidationParameters = new TokenValidationParameters
-{
-    ValidateIssuer = false,
-    ValidateAudience = false,
-    ValidateLifetime = true,
-    ValidateIssuerSigningKey = true,
-    //IssuerSigningKey = Llaves.ObtenerLlave(builder.Configuration).First(),
-    IssuerSigningKeys = Llaves.ObtenerTodasLasLlaves(builder.Configuration),
-    ClockSkew = TimeSpan.Zero
-});
+builder.Services.AddAuthentication().AddJwtBearer(opt => {
+    opt.MapInboundClaims = false;
+    opt.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        //IssuerSigningKey = Llaves.ObtenerLlave(builder.Configuration).First(),
+        IssuerSigningKeys = Llaves.ObtenerTodasLasLlaves(builder.Configuration),
+        ClockSkew = TimeSpan.Zero
+    };
+}
+);
 builder.Services.AddAuthorization();
 
 
@@ -78,17 +84,18 @@ var app = builder.Build();
 app.UseExceptionHandler(exp =>exp.Run(async context =>
 {
     var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
-    var except = exceptionHandlerFeature?.Error;
+    var exception = exceptionHandlerFeature?.Error!;
 
     var error = new ErrorModel();
+    error.StackTrace = exception.StackTrace!;
+    error.MensajeError = exception.Message;
     error.Fecha = DateTime.UtcNow;
-    error.MensajeError = except.Message;
-    error.StackTrace = except.StackTrace;
 
     var repositorio = context.RequestServices.GetRequiredService<IErrorRepositorio>();
     await repositorio.CrearError(error);
-    await TypedResults.BadRequest(new { Type = "Error", Message = "Ha ocurrido un error.", status=500 }).ExecuteAsync(context);
+    await TypedResults.BadRequest(new {Type = "Error",Message = "Ha ocurrido un error, revisa los parametros y vuelve a intentarlo.",Status =500}).ExecuteAsync(context);
 }));
+
 
 
 app.UseStatusCodePages();

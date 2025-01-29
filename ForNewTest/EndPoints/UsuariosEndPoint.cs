@@ -51,7 +51,6 @@ namespace ForNewTest.EndPoints
             };
 
             var resultado = await userManager.CreateAsync(usuario,credencialesUsuarioDTO.Password);
-
             if (resultado.Succeeded)
             {
                 var credencialesRespuesta = ConstruirToken(credencialesUsuarioDTO,configuration);
@@ -73,7 +72,7 @@ namespace ForNewTest.EndPoints
             var creds = new SigningCredentials(llave.First(),SecurityAlgorithms.HmacSha256);
             var expiracion = DateTime.UtcNow.AddHours(1);
 
-            var tokenDeSeguridad = new JwtSecurityToken(issuer:null,audience:null,claims:claims,expires:expiracion,signingCredentials:creds);
+            var tokenDeSeguridad = new JwtSecurityToken(issuer:null,audience:null,claims:claims,expires:expiracion,signingCredentials: creds);
 
             var token = new JwtSecurityTokenHandler().WriteToken(tokenDeSeguridad);
 

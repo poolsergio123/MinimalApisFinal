@@ -13,11 +13,9 @@ namespace ForNewTest.Utilidades
         public static IEnumerable<SecurityKey> ObtenerLlave(IConfiguration configuration) => ObtenerLlave(configuration,IssuerOwn);
         public static IEnumerable<SecurityKey> ObtenerLlave(IConfiguration configuration, string issuer)
         {
-
-
             var signingKey = configuration.GetSection(SeccionLlaves)
                                           .GetChildren()
-                                          .SingleOrDefault(x=> x[SeccionLlaves_Emisor] == issuer);
+                                          .SingleOrDefault(x => x[SeccionLlaves_Emisor] == issuer);
 
 
 

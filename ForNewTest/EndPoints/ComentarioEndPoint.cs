@@ -3,6 +3,7 @@ using ForNewTest.DTO_s;
 using ForNewTest.Entidades;
 using ForNewTest.Filtros;
 using ForNewTest.IRepositorio;
+using ForNewTest.Servicios;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using System.Text.RegularExpressions;
@@ -47,7 +48,7 @@ namespace ForNewTest.EndPoints
             return TypedResults.Ok(comentariosDTO);
         }
 
-        static async Task<Results<Created<ComentarioDTO>,NotFound<Error>>> CrearComentario(int peliculaid,CrearComentarioDTO crearComentarioDTO,IComentarioRepositorio comentarioRepositorio, IPeliculaRepositorio peliculaRepositorio, IOutputCacheStore outputCache, IMapper mapper)
+        static async Task<Results<Created<ComentarioDTO>,NotFound<Error>,BadRequest<string>>> CrearComentario(int peliculaid,CrearComentarioDTO crearComentarioDTO,IComentarioRepositorio comentarioRepositorio, IPeliculaRepositorio peliculaRepositorio, IOutputCacheStore outputCache, IMapper mapper,IServiciosUsuarios serviciosUsuarios)
         {
             if (!await peliculaRepositorio.Existe(peliculaid))
             {
@@ -57,6 +58,14 @@ namespace ForNewTest.EndPoints
             var comentario = mapper.Map<ComentarioModel>(crearComentarioDTO);
 
             comentario.PeliculaModelId = peliculaid;
+
+            var usuario = await serviciosUsuarios.ObtenerUsuario();
+            if (usuario is null)
+            {
+                return TypedResults.BadRequest("Usuario no encontradp");
+            }
+            comentario.UsuarioModelId = usuario.Id;
+
             var id = await comentarioRepositorio.CrearComentario(comentario);
             comentario.Id= id;
             var comentarioDTO = mapper.Map<ComentarioDTO>(comentario);
@@ -81,7 +90,7 @@ namespace ForNewTest.EndPoints
             var comentarioDTO = mapper.Map<ComentarioDTO> (comentario);
             return TypedResults.Ok(comentarioDTO);
         }
-        static async Task<Results<NoContent,NotFound<Error>>> ActualizarComentario(int peliculaid,int id,CrearComentarioDTO crearComentarioDTO, IComentarioRepositorio comentarioRepositorio, IPeliculaRepositorio peliculaRepositorio, IOutputCacheStore outputCache, IMapper mapper)
+        static async Task<Results<NoContent,NotFound<Error>,ForbidHttpResult>> ActualizarComentario(int peliculaid,int id,CrearComentarioDTO crearComentarioDTO, IComentarioRepositorio comentarioRepositorio, IPeliculaRepositorio peliculaRepositorio, IOutputCacheStore outputCache, IMapper mapper,IServiciosUsuarios serviciosUsuarios)
         {
             var peliculadb = await peliculaRepositorio.ObtenerPorId(peliculaid);
             if (peliculadb is null)
@@ -89,12 +98,25 @@ namespace ForNewTest.EndPoints
                 var error = new Error { error="La pelicula con el id especificado no existe."};
                 return TypedResults.NotFound(error);
             }
+
+
             var comentariodb = await comentarioRepositorio.ObtenerPorId(id,peliculaid);
             if (comentariodb is null)
             {
                 var error = new Error { error = "El comentario con el id especificado no existe en la pelicula indicada." };
                 return TypedResults.NotFound(error);
             }
+
+            var usuario = await serviciosUsuarios.ObtenerUsuario();
+            if (usuario is null)
+            {
+                return TypedResults.NotFound(new Error { });
+            }
+            if (comentariodb.UsuarioModelId != usuario.Id)
+            {
+                return TypedResults.Forbid();
+            }
+
             var comentario = mapper.Map<ComentarioModel>(crearComentarioDTO);
             comentario.PeliculaModelId= peliculaid;
             comentario.Id= id;
@@ -103,7 +125,7 @@ namespace ForNewTest.EndPoints
             return TypedResults.NoContent();
         }
 
-        static async Task<Results<NoContent, NotFound<Error>>> EliminarComentario(int id,IPeliculaRepositorio peliculaRepositorio, IComentarioRepositorio comentarioRepositorio, IOutputCacheStore outputCache, int peliculaid=1)
+        static async Task<Results<NoContent, NotFound<Error>,ForbidHttpResult>> EliminarComentario(int id,IPeliculaRepositorio peliculaRepositorio, IComentarioRepositorio comentarioRepositorio, IOutputCacheStore outputCache , IServiciosUsuarios serviciosUsuarios, int peliculaid = 1)
         {
             if (!await peliculaRepositorio.Existe(peliculaid))
             {
@@ -113,6 +135,15 @@ namespace ForNewTest.EndPoints
 
             var comentariodb = await comentarioRepositorio.ObtenerPorId(id, peliculaid);
 
+            var usuario = await serviciosUsuarios.ObtenerUsuario();
+            if (usuario is null)
+            {
+                return TypedResults.NotFound(new Error { });
+            }
+            if (comentariodb.UsuarioModelId != usuario.Id)
+            {
+                return TypedResults.Forbid();
+            }
             if (comentariodb is null)
             {
                 var error = new Error { error = "El comentario con el id especificado no existe en la pelicula indicada." };
