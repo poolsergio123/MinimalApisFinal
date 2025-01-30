@@ -67,7 +67,9 @@ builder.Services.AddAuthentication().AddJwtBearer(opt => {
     };
 }
 );
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(auth => {
+    auth.AddPolicy("esadmin",politica =>politica.RequireClaim("esadmin"));
+});
 
 
 var app = builder.Build();

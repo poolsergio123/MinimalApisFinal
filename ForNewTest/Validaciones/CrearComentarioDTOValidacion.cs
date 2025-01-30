@@ -6,7 +6,8 @@ namespace ForNewTest.Validaciones
     public class CrearComentarioDTOValidacion:AbstractValidator<CrearComentarioDTO>
     {
         public CrearComentarioDTOValidacion() {
-            RuleFor(x => x.Cuerpo).NotEmpty().WithMessage(Utilidades.CampoRequeridoMensaje);
+            RuleFor(x => x.Cuerpo).NotEmpty().WithMessage(Utilidades.CampoRequeridoMensaje)
+                                  .Must(Utilidades.PrimeraLetraEnMayuscula).WithMessage(Utilidades.PrimeraLetraMensaje);
 
         }
     }

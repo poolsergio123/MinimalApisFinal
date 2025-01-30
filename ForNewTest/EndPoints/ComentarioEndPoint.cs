@@ -15,12 +15,12 @@ namespace ForNewTest.EndPoints
     {
         public static RouteGroupBuilder MapComentario(this RouteGroupBuilder group)
         {
-            group.MapGet("/", ObtenerComentarios).CacheOutput(c=>c.Expire(TimeSpan.FromSeconds(60)).Tag("comentario-get"));
-            group.MapGet("/{id:int}", ObtenerPorId);
-            group.MapGet("/{cuerpo}", ObtenerPorNombre);
-            group.MapPost("/", CrearComentario).AddEndpointFilter<FiltroDeValidaciones<CrearComentarioDTO>>();
-            group.MapPut("/{id:int}", ActualizarComentario).AddEndpointFilter<FiltroDeValidaciones<CrearComentarioDTO>>();
-            group.MapDelete("/{id:int}", EliminarComentario);
+            group.MapGet("/", ObtenerComentarios).CacheOutput(c=>c.Expire(TimeSpan.FromSeconds(60)).Tag("comentario-get")).RequireAuthorization();
+            group.MapGet("/{id:int}", ObtenerPorId).RequireAuthorization();
+            group.MapGet("/{cuerpo}", ObtenerPorNombre).RequireAuthorization();
+            group.MapPost("/", CrearComentario).AddEndpointFilter<FiltroDeValidaciones<CrearComentarioDTO>>().RequireAuthorization();
+            group.MapPut("/{id:int}", ActualizarComentario).AddEndpointFilter<FiltroDeValidaciones<CrearComentarioDTO>>().RequireAuthorization();
+            group.MapDelete("/{id:int}", EliminarComentario).RequireAuthorization();
             return group;
         }
         static async Task<Results<Ok<List<ComentarioDTO>>,NotFound<Error>>> ObtenerPorNombre(string cuerpo,int peliculaid, IComentarioRepositorio comentarioRepositorio, IPeliculaRepositorio peliculaRepositorio, IMapper mapper)
