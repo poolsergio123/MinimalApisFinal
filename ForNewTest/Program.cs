@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using ForNewTest.Utilidades;
 using Azure.Identity;
+using Microsoft.OpenApi.Models;
+using ForNewTest.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,7 +49,35 @@ builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
 builder.Services.AddHttpContextAccessor();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(x =>
+{
+    x.SwaggerDoc("v1",new OpenApiInfo
+    {
+        Title="Api de Peliculas",
+        Description = "Probando mi api",
+        Contact= new OpenApiContact
+        {
+            Email="paulsergioc72@gmail.com",
+            Name="Paul Sergio",
+            Url=new Uri("https://github.com/poolsergio123")            
+        },
+        License=new OpenApiLicense
+        {
+            Name="MIT",
+            Url=new Uri("https://opensource.org/license/mit/")
+        }
+    });
+    x.AddSecurityDefinition("Bearer",new OpenApiSecurityScheme
+    {
+        Name="Authorization",
+        Type=SecuritySchemeType.ApiKey,
+        Scheme="Bearer",
+        BearerFormat = "JWT",
+        In=ParameterLocation.Header
+    });
+    x.OperationFilter<FIltroAutorizacion>();
+    
+});
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 

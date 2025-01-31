@@ -14,27 +14,41 @@ namespace ForNewTest.EndPoints
     public static class GeneroEndPoint
     {
         public static RouteGroupBuilder MapGenero(this RouteGroupBuilder group) {
-            group.MapGet("/", ListarGenero).CacheOutput(exp => exp.Expire(TimeSpan.FromSeconds(60)).Tag("genero-cache")).RequireAuthorization();
+            group.MapGet("/", ListarGenero).CacheOutput(exp => exp.Expire(TimeSpan.FromSeconds(60)).Tag("genero-cache")).RequireAuthorization("esadmin");
             group.MapGet("/{id}", ObtenerGeneroPorId);
-            group.MapPost("generos/", CrearGenero).AddEndpointFilter<FiltroDeValidaciones<CrearGeneroDTO>>();
-            group.MapPut("generos/{id}", ActualizarGenero).AddEndpointFilter<FiltroDeValidaciones<CrearGeneroDTO>>();
-            group.MapDelete("delete/{id}", EliminarGenero);
+            group.MapPost("generos/", CrearGenero).AddEndpointFilter<FiltroDeValidaciones<CrearGeneroDTO>>().RequireAuthorization("esadmin");
+            group.MapPut("generos/{id}", ActualizarGenero).AddEndpointFilter<FiltroDeValidaciones<CrearGeneroDTO>>().RequireAuthorization("esadmin")
+                .WithOpenApi(opciones => {
+                    opciones.Summary = "Actualizar un Genero";
+                    opciones.Description = "Este endpoint actualiza generos.";
+                    opciones.Parameters[0].Description = "Id de un genero para actualizar.";
+                    opciones.RequestBody.Description = "Nombre del genero.";
+                    return opciones;
+                
+                });
+            group.MapDelete("delete/{id}", EliminarGenero).RequireAuthorization("esadmin");
             return group;
         }
 
 
-        static async Task<Ok<List<GeneroDTO>>> ListarGenero(IGeneroRepositorio generoRepositorio,IMapper mapper) {
+        static async Task<Ok<List<GeneroDTO>>> ListarGenero(IGeneroRepositorio generoRepositorio, IMapper mapper, ILoggerFactory loggerFactory) {
+            var tipo = typeof(GeneroEndPoint);
+            var logger = loggerFactory.CreateLogger(tipo.FullName!);
+            logger.LogWarning("Obteniendo listado generos warning");
+            logger.LogError("Obteniendo listado generos error");
+            logger.LogCritical("Obteniendo listado generos critical");
             var generos = await generoRepositorio.ObtenerGeneros();
             var generosDTO = mapper.Map<List<GeneroDTO>>(generos);
             return  TypedResults.Ok(generosDTO);
         }
         
 
-        static async Task<Results<Ok<GeneroDTO>, NotFound>> ObtenerGeneroPorId(int id, IGeneroRepositorio generoRepositorio,IMapper mapper)
+        static async Task<Results<Ok<GeneroDTO>, NotFound>> ObtenerGeneroPorId([AsParameters] ParametrosObtenerGeneroIdDTO modelo)
         {
-            var genero = await generoRepositorio.ObtenerGeneroPorId(id);
-            var generoDTO = mapper.Map<GeneroDTO>(genero);
-            if (!await generoRepositorio.Existe(id))
+            var genero = await modelo.GeneroRepositorio.ObtenerGeneroPorId(modelo.Id);
+            //ctrl + r + r => para renombrar
+            var generoDTO = modelo.Mapper.Map<GeneroDTO>(genero);
+            if (!await modelo.GeneroRepositorio.Existe(modelo.Id))
             {
                 return TypedResults.NotFound();
             }

@@ -14,5 +14,6 @@ namespace ForNewTest.IRepositorio
         Task<List<PeliculaModel>> ObtenerPorNombre(string nombre);
         Task AsignarGeneros(int id, List<int> generosId);
         Task AsignarActores(int id, List<ActorPelicula> actores);
+        Task<List<PeliculaModel>> Filtrar(PeliculasFiltrarDTO peliculasFiltrarDTO);
     }
 }

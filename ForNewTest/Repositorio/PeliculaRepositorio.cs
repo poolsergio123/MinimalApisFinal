@@ -99,5 +99,35 @@ namespace ForNewTest.Repositorio
             pelicula.ActoresPeliculas = _mapper.Map(actores,pelicula.ActoresPeliculas);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<PeliculaModel>> Filtrar(PeliculasFiltrarDTO peliculasFiltrarDTO)
+        {
+            var peliculasQueryable = _context.Peliculas.AsQueryable();
+            if (!string.IsNullOrEmpty(peliculasFiltrarDTO.Titulo))
+            {
+                peliculasQueryable = peliculasQueryable.Where(p => p.Titulo.Contains(peliculasFiltrarDTO.Titulo));
+            }
+
+            if (peliculasFiltrarDTO.EnCines)
+            {
+                peliculasQueryable = peliculasQueryable.Where(p => p.EnCines);
+            }
+
+            if (peliculasFiltrarDTO.ProximosEstrenos)
+            {
+                var fecha = DateTime.Now;
+                peliculasQueryable = peliculasQueryable.Where(x => x.FechaLanzamiento > fecha);
+            }
+
+            if (peliculasFiltrarDTO.GeneroModelId != 0)
+            {
+                peliculasQueryable = peliculasQueryable.Where(p => p.GeneroPeliculas.Select(gp => gp.GeneroModelId).Contains(peliculasFiltrarDTO.GeneroModelId));
+            }
+
+            await _httpContext.ParametrosEnCabecera(peliculasQueryable);
+            var peliculas = await peliculasQueryable.Paginar(peliculasFiltrarDTO.PaginaDTO).ToListAsync();
+
+            return peliculas;
+        }
     }
 }

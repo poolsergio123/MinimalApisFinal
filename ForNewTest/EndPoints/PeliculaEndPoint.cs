@@ -4,6 +4,7 @@ using ForNewTest.Entidades;
 using ForNewTest.Filtros;
 using ForNewTest.IRepositorio;
 using ForNewTest.Servicios;
+using ForNewTest.Utilidades;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -16,14 +17,17 @@ namespace ForNewTest.EndPoints
 
         public static RouteGroupBuilder MapPelicula(this RouteGroupBuilder group)
         {
-            group.MapGet("/",ObtenerPeliculas).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("pelicula-get"));
+            group.MapGet("/",ObtenerPeliculas).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("pelicula-get"))
+                .AgregarParametrosAOpenApi();
             group.MapGet("/{id:int}",ObtenerPorId);
             group.MapGet("/{titulo}",ObtenerPorNombre );
-            group.MapPost("/",CrearPelicula).DisableAntiforgery().AddEndpointFilter<FiltroDeValidaciones<CrearPeliculaDTO>>();
-            group.MapPut("/{id:int}",ActualizarPelicula).DisableAntiforgery().AddEndpointFilter<FiltroDeValidaciones<CrearPeliculaDTO>>();
-            group.MapDelete("/{id:int}",EliminarPelicula);
+            group.MapPost("/",CrearPelicula).DisableAntiforgery().AddEndpointFilter<FiltroDeValidaciones<CrearPeliculaDTO>>().RequireAuthorization("esadmin").WithOpenApi();
+            group.MapPut("/{id:int}",ActualizarPelicula).DisableAntiforgery().AddEndpointFilter<FiltroDeValidaciones<CrearPeliculaDTO>>().RequireAuthorization("esadmin").WithOpenApi();
+            group.MapDelete("/{id:int}",EliminarPelicula).RequireAuthorization("esadmin");
             group.MapPost("/{id:int}/asignargeneros", AsignarGeneros);
             group.MapPost("/{id:int}/asignaractores",AsignarActores);
+
+            group.MapGet("/filtrar",FiltrarPeliculas).AgregarParametrosPeliculasFiltroAOpenApi();
             return group;
         }
         static async Task<Results<Ok<PeliculaDTO>, NotFound>> ObtenerPorId(int id, IMapper mapper, IPeliculaRepositorio repositorio)
@@ -74,9 +78,8 @@ namespace ForNewTest.EndPoints
             return TypedResults.NoContent();
 
         }
-        static async Task<Ok<List<PeliculaDTO>>> ObtenerPeliculas(IMapper mapper, IPeliculaRepositorio peliculaRepositorio,int pagina =1, int registrosPorPagina =10)
+        static async Task<Ok<List<PeliculaDTO>>> ObtenerPeliculas(IMapper mapper, IPeliculaRepositorio peliculaRepositorio,PaginaDTO paginacion)
         {
-            var paginacion = new PaginaDTO { Pagina = pagina, RegistrosPorPagina = registrosPorPagina };
             var peliculadb = await peliculaRepositorio.ObtenerPeliculas(paginacion);
             var peliculasDTO = mapper.Map<List<PeliculaDTO>>(peliculadb);
             return TypedResults.Ok(peliculasDTO);
@@ -147,6 +150,13 @@ namespace ForNewTest.EndPoints
             var actores = mapper.Map<List<ActorPelicula>>(actoresDTO);
             await peliculaRepositorio.AsignarActores(id,actores);
             return TypedResults.NoContent();
+        }
+
+        static async Task<Ok<List<PeliculaDTO>>> FiltrarPeliculas(PeliculasFiltrarDTO peliculasFiltrarDTO, [AsParameters] ParametrosFiltrarPeliculasDTO modelo)
+        {
+            var peliculas = await modelo.Repositorio.Filtrar(peliculasFiltrarDTO);
+            var peliculasDTO = modelo.Mapper.Map<List<PeliculaDTO>>(peliculas);
+            return TypedResults.Ok(peliculasDTO);
         }
 
     }
