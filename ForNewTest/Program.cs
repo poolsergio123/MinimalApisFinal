@@ -37,7 +37,12 @@ builder.Services.AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<Aplica
 builder.Services.AddScoped<UserManager<IdentityUser>>();
 builder.Services.AddScoped<SignInManager<IdentityUser>>();
 // Add services to the container.
-builder.Services.AddOutputCache();
+//builder.Services.AddOutputCache();
+builder.Services.AddStackExchangeRedisOutputCache(opc=>
+{
+    opc.Configuration = builder.Configuration.GetConnectionString("redis");
+});
+
 builder.Services.AddScoped<IGeneroRepositorio, GeneroRepositorio>();
 builder.Services.AddScoped<IActorRepositorio, ActorRepositorio>();
 builder.Services.AddScoped<IPeliculaRepositorio, PeliculaRepositorio>();

@@ -5,6 +5,7 @@ using ForNewTest.Entidades;
 using ForNewTest.IRepositorio;
 using ForNewTest.Utilidades;
 using Microsoft.AspNetCore.Http;
+using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace ForNewTest.Repositorio
@@ -14,12 +15,15 @@ namespace ForNewTest.Repositorio
         private readonly AplicationDBContext _context;
         private readonly HttpContext _httpContext;
         private readonly IMapper _mapper;
+        private readonly ILogger<PeliculaRepositorio> _logger;
 
-        public PeliculaRepositorio(AplicationDBContext dBContext, IHttpContextAccessor contextAccessor,IMapper mapper)
+        public PeliculaRepositorio(AplicationDBContext dBContext, IHttpContextAccessor contextAccessor,IMapper mapper, ILogger<PeliculaRepositorio> logger)
         {
+
             _context = dBContext;
             _httpContext = contextAccessor.HttpContext!;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<List<PeliculaModel>> ObtenerPeliculas(PaginaDTO paginaDTO)
@@ -107,11 +111,23 @@ namespace ForNewTest.Repositorio
             {
                 peliculasQueryable = peliculasQueryable.Where(p => p.Titulo.Contains(peliculasFiltrarDTO.Titulo));
             }
-
-            if (peliculasFiltrarDTO.EnCines)
+            //false no lo agrega al query
+            if (peliculasFiltrarDTO.EnCines.HasValue && peliculasFiltrarDTO.EnCines ==true)
             {
                 peliculasQueryable = peliculasQueryable.Where(p => p.EnCines);
             }
+            else if(peliculasFiltrarDTO.EnCines.HasValue && peliculasFiltrarDTO.EnCines == false)
+            {
+                peliculasQueryable = peliculasQueryable.Where(p => p.EnCines == peliculasFiltrarDTO.EnCines);
+
+            }
+
+
+            //else
+            //{
+            //    peliculasQueryable = peliculasQueryable.Where(p => p.EnCines == peliculasFiltrarDTO.EnCines);
+
+            //}
 
             if (peliculasFiltrarDTO.ProximosEstrenos)
             {
@@ -124,7 +140,22 @@ namespace ForNewTest.Repositorio
                 peliculasQueryable = peliculasQueryable.Where(p => p.GeneroPeliculas.Select(gp => gp.GeneroModelId).Contains(peliculasFiltrarDTO.GeneroModelId));
             }
 
-            await _httpContext.ParametrosEnCabecera(peliculasQueryable);
+            if (!string.IsNullOrWhiteSpace(peliculasFiltrarDTO.CampoOrdenar))
+            {
+                var tipoOrden = peliculasFiltrarDTO.OrdenarAscendente ? "ascending" : "descending";
+                try
+                {
+                    peliculasQueryable = peliculasQueryable.OrderBy($"{peliculasFiltrarDTO.CampoOrdenar} {tipoOrden}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message,ex);
+                }
+
+
+            }
+
+                await _httpContext.ParametrosEnCabecera(peliculasQueryable);
             var peliculas = await peliculasQueryable.Paginar(peliculasFiltrarDTO.PaginaDTO).ToListAsync();
 
             return peliculas;

@@ -1,4 +1,5 @@
 ﻿using ForNewTest.Utilidades;
+using System.Reflection.Metadata;
 
 namespace ForNewTest.DTO_s
 {
@@ -13,10 +14,10 @@ namespace ForNewTest.DTO_s
 
         public string? Titulo { get; set; }
         public int GeneroModelId { get; set; }
-        public bool EnCines { get; set; }
+        public bool? EnCines { get; set; }
         public bool ProximosEstrenos { get; set; }
         public string? CampoOrdenar { get; set; }
-        public bool? OrdenarAscendente { get; set; } = true;
+        public bool OrdenarAscendente { get; set; } = true;
 
 
 
@@ -27,10 +28,18 @@ namespace ForNewTest.DTO_s
 
             var generoModelId = httpContext.ExtraerValorODefault(nameof(GeneroModelId),0);
 
-
+            bool? miValor = null;
             var titulo = httpContext.ExtraerValorODefault(nameof(Titulo),string.Empty);
-
-            var enCines = httpContext.ExtraerValorODefault(nameof(EnCines),false);
+            var valor = httpContext.Request.Query[nameof(EnCines)];
+            if (!string.IsNullOrEmpty(valor))
+            {
+                bool valorConvertido;
+                if (bool.TryParse(valor, out valorConvertido))
+                {
+                    miValor = valorConvertido;
+                }
+            }
+                //var enCines = httpContext.ExtraerValorODefault(nameof(EnCines),false);
 
             var proximosEstrenos = httpContext.ExtraerValorODefault(nameof(ProximosEstrenos),false);
 
@@ -43,7 +52,7 @@ namespace ForNewTest.DTO_s
                 RecordsPorPagina = recordsPorPagina,
                 GeneroModelId = generoModelId,
                 Titulo = titulo,
-                EnCines = enCines,
+                EnCines = miValor,
                 ProximosEstrenos = proximosEstrenos,
                 CampoOrdenar = campoOrdernar,
                 OrdenarAscendente = ordenarAscendente,

@@ -64,17 +64,28 @@ namespace ForNewTest.Utilidades
 
                 opciones.Parameters.Add(new OpenApiParameter
                 {
+                    Name = "generoModelId",
+                    In = ParameterLocation.Query,
+                    Schema = new OpenApiSchema
+                    {
+                        Type = "integer",
+                    }
+                });
+                opciones.Parameters.Add(new OpenApiParameter
+                {
                     Name = "campoOrdenar",
                     In = ParameterLocation.Query,
                     Schema = new OpenApiSchema
                     {
                         Type = "string",
+                        Enum= new List<IOpenApiAny> { new OpenApiString("Titulo"),
+                                                      new OpenApiString("FechaLanzamiento"),
+                                                      new OpenApiString("Id")}
                     }
                 });
-
                 opciones.Parameters.Add(new OpenApiParameter
                 {
-                    Name = "ordernarAscendente",
+                    Name = "ordenarAscendente",
                     In = ParameterLocation.Query,
                     Schema = new OpenApiSchema
                     {
@@ -83,15 +94,7 @@ namespace ForNewTest.Utilidades
                     }
                 });
 
-                opciones.Parameters.Add(new OpenApiParameter
-                {
-                    Name = "generoModelId",
-                    In = ParameterLocation.Query,
-                    Schema = new OpenApiSchema
-                    {
-                        Type = "integer",
-                    }
-                });
+
                 return opciones;
             });
         }

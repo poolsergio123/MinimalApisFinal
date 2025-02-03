@@ -12,14 +12,14 @@ namespace ForNewTest.Servicios
         }
         public async Task<string> Almacenar(string contenedor, IFormFile archivo)
         {
-            var extension = Path.GetExtension(archivo.FileName);
+            var extension = System.IO.Path.GetExtension(archivo.FileName);
             var nombreArchivo = $"{Guid.NewGuid()}{extension}";
-            string folder = Path.Combine(_env.WebRootPath, contenedor);
+            string folder = System.IO.Path.Combine(_env.WebRootPath, contenedor);
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
             }
-            string ruta = Path.Combine(folder,nombreArchivo);
+            string ruta = System.IO.Path.Combine(folder,nombreArchivo);
             using(var ms = new MemoryStream())
             {
                 await archivo.CopyToAsync(ms);
@@ -27,7 +27,7 @@ namespace ForNewTest.Servicios
                 await File.WriteAllBytesAsync(ruta,contenido);
             }
             var url = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}";
-            var urlArchivo= Path.Combine(url,contenedor,nombreArchivo).Replace("\\","/");
+            var urlArchivo= System.IO.Path.Combine(url,contenedor,nombreArchivo).Replace("\\","/");
             return urlArchivo;
         }
 
@@ -38,8 +38,8 @@ namespace ForNewTest.Servicios
                 return Task.CompletedTask;
             }
 
-            var nombreArchivo=Path.GetFileName(ruta);
-            var directorioArchivo = Path.Combine(_env.WebRootPath, contenedor, nombreArchivo);
+            var nombreArchivo= System.IO.Path.GetFileName(ruta);
+            var directorioArchivo = System.IO.Path.Combine(_env.WebRootPath, contenedor, nombreArchivo);
             if (File.Exists(directorioArchivo))
             {
                 File.Delete(directorioArchivo);
