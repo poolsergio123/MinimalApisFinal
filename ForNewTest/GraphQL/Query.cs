@@ -5,7 +5,29 @@ namespace ForNewTest.GraphQL
 {
     public class Query
     {
-        public IQueryable<GeneroModel> ObtenerGenero([Service] AplicationDBContext aplicationDBContext) => aplicationDBContext.Generos;
-        
+        [Serial]
+        [UsePaging]
+        [UseProjection]
+        [UseFiltering]
+        [UseSorting]
+        public IQueryable<GeneroModel> ObtenerGeneros([Service] AplicationDBContext aplicationDBContext) => aplicationDBContext.Generos;
+
+
+        [Serial]
+        [UsePaging]
+        [UseProjection]
+        [UseFiltering]
+        [UseSorting]
+        public IQueryable<PeliculaModel> ObtenerPeliculas([Service] AplicationDBContext aplicationDBContext) => aplicationDBContext.Peliculas;
+
+
+        [Serial]
+        [UsePaging]
+        [UseProjection]
+        [UseFiltering]
+        [UseSorting]
+        public IQueryable<ActorModel> ObtenerActores([Service] AplicationDBContext aplicationDBContext) => aplicationDBContext.Actores;
+
+
     }
 }

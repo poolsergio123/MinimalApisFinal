@@ -10,6 +10,7 @@ namespace ForNewTest.Utilidades
             CreateMap<GeneroModel, GeneroDTO>();
             //CreateMap<List<GeneroModel>, List<GeneroDTO>>();
             CreateMap<CrearGeneroDTO, GeneroModel>();
+            CreateMap<ActualizarGeneroDTO, GeneroModel>();
 
 
             CreateMap<ActorModel, ActorDTO>();

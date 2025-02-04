@@ -14,7 +14,7 @@ namespace ForNewTest.EndPoints
     public static class GeneroEndPoint
     {
         public static RouteGroupBuilder MapGenero(this RouteGroupBuilder group) {
-            group.MapGet("/", ListarGenero).CacheOutput(exp => exp.Expire(TimeSpan.FromSeconds(60)).Tag("genero-cache")).RequireAuthorization("esadmin");
+            group.MapGet("/", ListarGenero).CacheOutput(exp => exp.Expire(TimeSpan.FromSeconds(60)).Tag("genero-cache"));
             group.MapGet("/{id}", ObtenerGeneroPorId);
             group.MapPost("generos/", CrearGenero).AddEndpointFilter<FiltroDeValidaciones<CrearGeneroDTO>>().RequireAuthorization("esadmin");
             group.MapPut("generos/{id}", ActualizarGenero).AddEndpointFilter<FiltroDeValidaciones<CrearGeneroDTO>>().RequireAuthorization("esadmin")

@@ -14,6 +14,7 @@ using ForNewTest.Utilidades;
 using Azure.Identity;
 using Microsoft.OpenApi.Models;
 using ForNewTest.Swagger;
+using ForNewTest.GraphQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +32,13 @@ builder.Services.AddCors(opciones =>
     });
 });
 builder.Services.AddDbContext<AplicationDBContext>(op => op.UseSqlServer("name=DefaultConnection"));
-
+builder.Services.AddGraphQLServer()
+                .AddQueryType<Query>()
+                .AddMutationType<Mutation>()
+                .AddAuthorization()
+                .AddProjections()
+                .AddFiltering()
+                .AddSorting();
 builder.Services.AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<AplicationDBContext>().AddDefaultTokenProviders();
 
 builder.Services.AddScoped<UserManager<IdentityUser>>();
@@ -144,6 +151,7 @@ app.UseCors();
 
 
 app.UseAuthorization();
+app.MapGraphQL();
 //Este codigo puesto con el app.UseExceptionHandler();, devuelve un json muy abrumador.
 //app.mapget("/", () =>
 //{
