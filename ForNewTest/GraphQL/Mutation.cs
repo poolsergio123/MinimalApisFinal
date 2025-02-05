@@ -10,15 +10,14 @@ namespace ForNewTest.GraphQL
     {
         [Serial]
         [Authorize(Policy ="esadmin")]
-        public async Task<GeneroDTO> InsertarGenero([Service]IGeneroRepositorio generoRepositorio, [Service]IMapper mapper, CrearGeneroDTO crearGeneroDTO)
+        public async Task<GeneroDTO> CrearGenero([Service]IGeneroRepositorio generoRepositorio, [Service]IMapper mapper, CrearGeneroDTO crearGeneroDTO)
         {
             var genero = mapper.Map<GeneroModel>(crearGeneroDTO);
-
-            int id=await generoRepositorio.CrearGenero(genero);
-
+            await generoRepositorio.CrearGenero(genero);
             var generoDTO = mapper.Map<GeneroDTO>(genero);
             return generoDTO;
         }
+
 
         [Serial]
         [Authorize(Policy = "esadmin")]
