@@ -20,8 +20,8 @@ namespace ForNewTest.EndPoints
         {
             group.MapPost("/registrar",Registrar).AddEndpointFilter<FiltroDeValidaciones<CredencialesUsuarioDTO>>();
             group.MapPost("/login", Login).AddEndpointFilter<FiltroDeValidaciones<CredencialesUsuarioDTO>>();
-            group.MapPost("/haceradmin", HacerAdmin).AddEndpointFilter<FiltroDeValidaciones<EditarClaimDTO>>()
-            .RequireAuthorization("esadmin");
+            group.MapPost("/haceradmin", HacerAdmin).AddEndpointFilter<FiltroDeValidaciones<EditarClaimDTO>>();
+            //.RequireAuthorization("esadmin");
             group.MapPost("/remover", RemoverAdmin).AddEndpointFilter<FiltroDeValidaciones<EditarClaimDTO>>()
                 .RequireAuthorization("esadmin");
             group.MapGet("/renovarToken",RenovarToken).RequireAuthorization();
@@ -119,7 +119,7 @@ namespace ForNewTest.EndPoints
             var creds = new SigningCredentials(llave.First(),SecurityAlgorithms.HmacSha256);
             var expiracion = DateTime.UtcNow.AddHours(1);
 
-            var tokenDeSeguridad = new JwtSecurityToken(issuer:null,audience:null,claims:claims,expires:expiracion,signingCredentials: creds);
+            var tokenDeSeguridad = new  JwtSecurityToken(issuer:null,audience:null,claims:claims,expires:expiracion,signingCredentials: creds);
 
             var token = new JwtSecurityTokenHandler().WriteToken(tokenDeSeguridad);
 
@@ -127,7 +127,6 @@ namespace ForNewTest.EndPoints
             {
                 Token = token,
                 Expiracion = expiracion
-                
             };
         }
     }

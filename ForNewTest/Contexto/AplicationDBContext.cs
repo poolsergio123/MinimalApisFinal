@@ -46,6 +46,7 @@ namespace ForNewTest.Contexto
         public DbSet<ComentarioModel> Comentarios { get; set; }
         public DbSet<GeneroPelicula> GeneroPeliculas { get; set; }
         public DbSet<ActorPelicula> ActorPeliculas { get; set; }
+        public DbSet<PersonaModel> Personas { get; set; }
         public DbSet<ErrorModel> Errores { get; set; }
     }
 }

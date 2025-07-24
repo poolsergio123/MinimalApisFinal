@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace ForNewTest.Utilidades
 {
@@ -10,7 +11,17 @@ namespace ForNewTest.Utilidades
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
-            double cantidad = await queryable.CountAsync();
+            // Si el proveedor es asincrónico (EF), usa CountAsync
+
+            double cantidad;
+            if (queryable.Provider is IAsyncQueryProvider)
+            {
+                cantidad = await queryable.CountAsync();
+            }
+            else
+            {
+                cantidad = queryable.Count(); // En memoria
+            }
 
             httpContext.Response.Headers.Append("CantidadRegistrosTotales",cantidad.ToString());
         }

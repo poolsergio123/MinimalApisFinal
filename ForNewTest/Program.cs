@@ -52,6 +52,7 @@ builder.Services.AddStackExchangeRedisOutputCache(opc=>
 
 builder.Services.AddScoped<IGeneroRepositorio, GeneroRepositorio>();
 builder.Services.AddScoped<IActorRepositorio, ActorRepositorio>();
+builder.Services.AddScoped<IPersonaRepositorio, PersonaRepositorio>();
 builder.Services.AddScoped<IPeliculaRepositorio, PeliculaRepositorio>();
 builder.Services.AddScoped<IComentarioRepositorio, ComentarioRepositorio>();
 builder.Services.AddScoped<IErrorRepositorio, ErrorRepositorio>();
@@ -162,6 +163,7 @@ app.MapGroup("/actores").MapActor();
 app.MapGroup("/peliculas").MapPelicula();
 app.MapGroup("/pelicula/{peliculaid:int}/comentarios").MapComentario();
 app.MapGroup("/usuarios").MapUsuarios();
+app.MapGroup("/personas").MapPersona();
 
 
 

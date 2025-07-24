@@ -32,6 +32,8 @@ namespace ForNewTest.Utilidades
             CreateMap<CrearComentarioDTO, ComentarioModel>();
 
             CreateMap<AsignarActorPeliculaDTO, ActorPelicula>();
+
+            CreateMap<PersonaModel,PersonaDTO>();
         }
     }
 }
