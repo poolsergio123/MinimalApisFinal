@@ -21,7 +21,7 @@ namespace ForNewTest.EndPoints
                 .AgregarParametrosAOpenApi();
             group.MapGet("/{id:int}",ObtenerPorId);
             group.MapGet("/{titulo}",ObtenerPorNombre );
-            group.MapPost("/",CrearPelicula).DisableAntiforgery().AddEndpointFilter<FiltroDeValidaciones<CrearPeliculaDTO>>().RequireAuthorization("esadmin").WithOpenApi();
+            group.MapPost("/",CrearPelicula).DisableAntiforgery().AddEndpointFilter<FiltroDeValidaciones<CrearPeliculaDTO>>().RequireAuthorization("esadmin");
             group.MapPut("/{id:int}",ActualizarPelicula).DisableAntiforgery().AddEndpointFilter<FiltroDeValidaciones<CrearPeliculaDTO>>().RequireAuthorization("esadmin").WithOpenApi();
             group.MapDelete("/{id:int}",EliminarPelicula).RequireAuthorization("esadmin");
             group.MapPost("/{id:int}/asignargeneros", AsignarGeneros);
